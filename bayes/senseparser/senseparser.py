@@ -7,7 +7,7 @@ from .keywordsfilter import KeywordsFilter
 from .titlewords import TitleWords
 from .lemmaparsers import lemma_components, compound_components
 
-# Tokens won't be taken from citations or quotation text in qutations
+# Tokens won't be taken from citations or quotation text in quotations
 #  with dates before these:
 CIT_MIN_DATE = 1550
 QT_MIN_DATE = 1700

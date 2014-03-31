@@ -35,10 +35,24 @@ class SenseObject(object):
         self.position_in_entry = position_in_entry
         self.senses_in_entry = total_senses
 
-        self.gloss = definition_to_gloss(sense.definition_manager().serialized(), self.wordclass)
+        self.gloss = definition_to_gloss(
+            sense.definition_manager().serialized(),
+            self.wordclass
+        )
         if not self.gloss and sense.parent_definition_manager() is not None:
             self.gloss = definition_to_gloss(
-                sense.parent_definition_manager().serialized(), self.wordclass)
+                sense.parent_definition_manager().serialized(),
+                self.wordclass
+            )
+
+        # Supplement the definition with the text of the first quotation,
+        #  if the sense doesn't really have a proper definition
+        self.definition_supplement = None
+        if (not self.definition or
+                len(self.definition) < 20 or
+                (len(self.definition) < 30 and 'quot' in self.definition)):
+            if sense.last_quotation() and sense.last_quotation().text():
+                self.definition_supplement = sense.last_quotation().text()[0:150]
 
         # Version number for this copy of the sense. Will usually be 0;
         #  clone_nums #1, #2, etc., will only occur where the dictionary

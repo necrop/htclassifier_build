@@ -41,6 +41,7 @@ FIELDS = {
         'reasontext',
         'reasoncode',
         'splitdefinition',
+        'definition_supplement',
     ],
     'thesaurusclass': [
         'id',
@@ -183,7 +184,7 @@ def _sense_to_row(sense, status):
         lexical_sort(sense.entry_lemma)[:50],
         sense.subentry_type or 'main sense',
         undefined,
-        random.randint(0, 10000), # sample order
+        random.randint(0, 10000),  # sample order
         bayes,
         bayes_confidence,
         _bayes_mismatch(sense),
@@ -198,6 +199,7 @@ def _sense_to_row(sense, status):
         reasontext,
         reasoncode,
         sense.clone_num,  # Gets changed to True/False before committing to DB
+        sense.definition_supplement,
     ]
     return row
 
