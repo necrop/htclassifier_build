@@ -12,15 +12,13 @@ import re
 
 import lex.oed.thesaurus.thesaurusdb as tdb
 
-from utils.tracer import trace_class, trace_instance, trace_sense
 from resources.mainsense.mainsense import MainSense
-from .compoundindexer import CompoundIndexer
 from .compoundderivative import compound_derivative
+from .indexer.compoundindexretriever import retrieve_from_compound_index
 from classifyengine.rankedsensesummary import ranked_sense_summary
 
 WORDCLASSES = ('NN', 'JJ', 'RB', 'first')
 MAIN_SENSE_FINDER = MainSense()
-COMPOUND_INDEX_FINDER = CompoundIndexer()
 
 # Living world, abstract properties, relative properties - dangerous
 #  classes since very vague and miscellaneous
@@ -88,10 +86,10 @@ class FormalCompoundAnalysis(object):
 
         # Likely thesaurus branches for the first and last elements,
         #  derived from the index of compound elements
-        word1_index = COMPOUND_INDEX_FINDER.find(sense.first_element(),
-                                                 'first')
-        word2_index = COMPOUND_INDEX_FINDER.find(sense.last_element(),
-                                                 sense.wordclass)
+        word1_index = retrieve_from_compound_index(sense.first_element(),
+                                                   'first')
+        word2_index = retrieve_from_compound_index(sense.last_element(),
+                                                   sense.wordclass)
 
         if (word1_index is not None and
                 word1_index.count >= 5 and

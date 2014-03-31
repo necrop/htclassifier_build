@@ -20,6 +20,7 @@ FIELDS = {
         'lemmasort',
         'wordclass',
         'definition',
+        'definition_supplement',
         'refentry',
         'refid',
         'headword',
@@ -41,7 +42,6 @@ FIELDS = {
         'reasontext',
         'reasoncode',
         'splitdefinition',
-        'definition_supplement',
     ],
     'thesaurusclass': [
         'id',
@@ -130,6 +130,12 @@ def _sense_to_row(sense, status):
     else:
         undefined = False
         definition = sense.definition[:200]
+
+    if sense.definition_supplement:
+        definition_supplement = sense.definition_supplement[:150]
+    else:
+        definition_supplement = None
+
     try:
         reasoncode = sense.reason_code
     except AttributeError:
@@ -178,6 +184,7 @@ def _sense_to_row(sense, status):
         lexical_sort(sense.lemma)[:100],
         sense.wordclass or 'NN',
         definition,
+        definition_supplement,
         sense.entry_id,
         sense.node_id,
         sense.entry_lemma[:50],
@@ -199,7 +206,6 @@ def _sense_to_row(sense, status):
         reasontext,
         reasoncode,
         sense.clone_num,  # Gets changed to True/False before committing to DB
-        sense.definition_supplement,
     ]
     return row
 

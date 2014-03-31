@@ -8,7 +8,6 @@ import pickle
 import lex.oed.thesaurus.thesaurusdb as tdb
 
 from pickler.sensemanager import PickleLoader
-
 from resources.binomials import Binomials
 from resources.mainsense.mainsense import MainSense
 from resources.derivationtester import DerivationTester
@@ -16,12 +15,13 @@ from resources.superordinates.superordinates import Superordinates
 from bayes.bayesclassifier import BayesClassifier
 from compounds.bayescompounds import BayesCompounds
 from compounds.formalcompoundanalysis import FormalCompoundAnalysis
-from compounds.compoundindexer import CompoundIndexer
+from compounds.indexer.rawindexer import CompoundIndexer
 from pickler.senseobject import BayesManager
 from .topicalclassifier import topical_classification
 from .rankedsensesummary import ranked_sense_summary
 from .bayesfilter import apply_bayes_filter
 from . import synonymchecker
+
 #from utils.tracer import trace_sense, trace_instance, trace_class
 
 binomial_checker = Binomials()

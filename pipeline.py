@@ -42,11 +42,10 @@ def bayes_compounds():
 
 
 def index_compounds():
-    from compounds.compoundindexer import CompoundIndexer
-    indexer = CompoundIndexer(input_dir=config.CLASSIFIED_DIR,
-                              resources_dir=config.RESOURCES_DIR)
-    indexer.make_raw_index()
-    indexer.refine_index()
+    from compounds.indexer.rawindexer import make_raw_index
+    from compounds.indexer.refiner import refine_index
+    make_raw_index(config.CLASSIFIED_DIR)
+    refine_index()
 
 
 def index_binomials():
