@@ -1,4 +1,4 @@
-from __future__ import division
+
 import lex.oed.thesaurus.thesaurusdb as tdb
 
 derivation_forms = (
@@ -29,12 +29,13 @@ derivation_forms = (
     ('ful', ('JJ',), ''),
 )
 
-colours = set(('black', 'blue', 'yellow', 'brown', 'red', 'white', 'green',
-    'orange', 'pink', 'purple', 'grey', 'gray'))
+colours = {'black', 'blue', 'yellow', 'brown', 'red', 'white', 'green',
+           'orange', 'pink', 'purple', 'grey', 'gray'}
+
 
 def compound_derivative(sense):
     if sense.last_element() is None:
-        return (None, None)
+        return None, None
 
     thesclass = None
     for ending, wordclasses, replacement in derivation_forms:
@@ -52,10 +53,10 @@ def compound_derivative(sense):
             # Test if the hypothetical base form exists, and if so
             #  find out how it is classified
             base_classifications = tdb.ranked_search(lemma=hypothetical_base,
-                current_only=True)
+                                                     current_only=True)
 
             if (tdb.distinct_senses(base_classifications) == 1 and
-                base_classifications[0].thesclass is not None):
+                    base_classifications[0].thesclass is not None):
                 thesclass = base_classifications[0].thesclass
                 break
 
@@ -67,6 +68,6 @@ def compound_derivative(sense):
             position = 'last'
         else:
             position = 'first'
-        return (base_classifications[0].thesclass, position)
+        return base_classifications[0].thesclass, position
     else:
-        return (None, None)
+        return None, None

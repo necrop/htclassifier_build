@@ -37,6 +37,11 @@ class WordSet(object):
         return None
 
     def combined_probabilities(self, other):
+        """
+        For each branch in self, calculate the combined probability of the
+        branch by adding together the probabilities of self and other
+        (the first and second words in the compound)
+        """
         if other is None:
             for b in self.branches:
                 b.consensus_score = b.probability(self.count)
@@ -59,7 +64,7 @@ class WordSet(object):
 
         # Sort so that the highest probability is first
         probabilities.sort(key=lambda row: row.consensus_score, reverse=True)
-        # Recalculate probabilities so that they're a ratio to 1
+        # Recalculate probabilities as ratios (x/1)
         total = sum([row.consensus_score for row in probabilities])
         for row in probabilities:
             row.consensus_score = row.consensus_score / total
@@ -90,6 +95,10 @@ class Level3Set(object):
         return self.node().breadcrumb()
 
     def probability(self, total):
+        """
+        Calculate the probability of this branch (as a ratio of its
+        count to the total counts of all branches)
+        """
         return self.count / total
 
     def first_child_node(self):

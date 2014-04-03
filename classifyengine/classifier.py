@@ -13,14 +13,14 @@ from resources.mainsense.mainsense import MainSense
 from resources.derivationtester import DerivationTester
 from resources.superordinates.superordinates import Superordinates
 from bayes.bayesclassifier import BayesClassifier
-from compounds.bayescompounds import BayesCompounds
-from compounds.formalcompoundanalysis import FormalCompoundAnalysis
-from compounds.indexer.rawindexer import CompoundIndexer
+from compounds.bayes.bayescompounds import BayesCompounds
+from compounds.analysis.formalcompoundanalysis import formal_compound_analysis, formal_compound_null_result
 from pickler.senseobject import BayesManager
 from .topicalclassifier import topical_classification
 from .rankedsensesummary import ranked_sense_summary
 from .bayesfilter import apply_bayes_filter
 from . import synonymchecker
+
 
 #from utils.tracer import trace_sense, trace_instance, trace_class
 
@@ -28,10 +28,10 @@ binomial_checker = Binomials()
 superordinate_manager = Superordinates()
 main_sense_finder = MainSense()
 deriv_tester = DerivationTester()
-formal_compound_analysis = FormalCompoundAnalysis()
 triage = ('classified', 'unclassified', 'intractable')
 
 letters = string.ascii_uppercase
+#letters = ['T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 
 
 class Classifier(object):
@@ -47,8 +47,6 @@ class Classifier(object):
         MainSense(**kwargs).load_data()
         # Prime the derivation tester
         DerivationTester(**kwargs).load_data()
-        # Prime the compounds indexer
-        CompoundIndexer(**kwargs).load_data()
 
         # Initialize the Classifier object
         for k, v in kwargs.items():
@@ -58,7 +56,7 @@ class Classifier(object):
 
         # Managers for plugging Bayes classification results into senses
         self.bayes = {mode: BayesCompounds(**kwargs) for mode in
-            ('bias_low', 'bias_high')}
+                      ('bias_low', 'bias_high')}
         self.bayes['main'] = BayesClassifier(**kwargs)
 
     def prepare_output_directories(self):
@@ -75,17 +73,19 @@ class Classifier(object):
             print('\tClassifying %s (Iteration #%d)...' % (letter, self.iteration))
 
             # Load Bayes evaluations for all the senses in this letter
-            print('\t\tLoading Bayes data for %s...' % letter)
             for name, manager in self.bayes.items():
                 if name == 'main':
                     manager.load_results(letter)
                 else:
                     manager.load_results(letter, name)
-            print('\t\tContinuing...')
 
             if self.mode == 'test':
-                self.compound_tracer = open(os.path.join(self.resources_dir,
-                    'compounds', 'trace', letter + '.txt'), 'w')
+                # Open file for tracing how compounds get classified
+                trace_file = os.path.join(self.resources_dir,
+                                          'compounds',
+                                          'trace',
+                                          letter + '.txt')
+                self.compound_tracer = open(trace_file, 'w')
 
             self.buffer = {t: [] for t in triage}
             self.main_sense_of_entry = None
@@ -140,6 +140,7 @@ class Classifier(object):
                     sense.class_id = selected_class.id
                     sense.reason_text = selected_class.reason_text
                     sense.reason_code = selected_class.reason_code
+                    #print(sense.lemma, sense.reason_code)
                     sense.runners_up = runners_up
                     self.buffer['classified'].append(sense)
                     running_totals['classified'] += 1
@@ -151,14 +152,14 @@ class Classifier(object):
 
             print('\t\t%s' % self._running_score(running_totals))
             if self.mode != 'test':
-               self.flush_buffer(letter)
+                self.flush_buffer(letter)
 
             if self.mode == 'test':
                 self.compound_tracer.close()
 
-
     def flush_buffer(self, letter):
-        """Pickle sense objects in the three triage categories to output
+        """
+        Pickle sense objects in the three triage categories to output
         files
         """
         for t in triage:
@@ -201,16 +202,18 @@ class Classifier(object):
         #  formal compound analysis (i.e. based mainly on the form of
         #  the lemma, ignoring the definition (if any) at this stage).
         if (sense.subentry_type != 'derivative' and
-                sense.first_element() is not None and
-                sense.last_element() is not None):
-            sense.compound_analysis = formal_compound_analysis.analyse(
-                sense, self.main_sense_of_entry)
+                sense.first_element() and
+                sense.last_element()):
+            sense.compound_analysis = formal_compound_analysis(
+                sense,
+                self.main_sense_of_entry
+            )
             # Log the compound analysis in the compound_tracer file (if
             #  this is a test run)
             if self.mode == 'test' and sense.compound_analysis:
                 self._trace_compound_analysis(sense)
         else:
-            sense.compound_analysis = formal_compound_analysis.null_result()
+            sense.compound_analysis = formal_compound_null_result()
 
         # Get classifications based on Bayes evaluations and/or subject
         #  labelling
@@ -224,12 +227,12 @@ class Classifier(object):
         #=============================================
 
         candidate_classifications = []
-        if sense.equals_crossreference() is not None:
+        if sense.equals_crossreference():
             candidate_classifications.append(equals_cross_reference(sense))
 
         if (self.iteration == 2 or
                 self.mode == 'test' or
-                sense.equals_crossreference() is None):
+                not sense.equals_crossreference()):
             if sense.wordclass == 'NN':
                 candidate_classifications.append(compare_binomials(sense))
 
@@ -349,7 +352,8 @@ class Classifier(object):
         self.compound_tracer.write('\n\n\n')
 
     def _update_main_sense(self, current_sense):
-        """Updates self.main_sense_of_entry to the main sense for the entry
+        """
+        Updates self.main_sense_of_entry to the main sense for the entry
         containing the current sense.
         """
         self.main_sense_of_entry = main_sense_finder.main_sense(

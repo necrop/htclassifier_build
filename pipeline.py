@@ -33,7 +33,7 @@ def bayes_classifier():
 
 
 def bayes_compounds():
-    from compounds.bayescompounds import BayesCompounds
+    from compounds.bayes.bayescompounds import BayesCompounds
     bc = BayesCompounds(resources_dir=config.RESOURCES_DIR)
     bc.make_classifiers()
     bc.classify_new_senses(bias_last=1.2, dir='bias_low')
@@ -58,12 +58,12 @@ def index_binomials():
 
 
 def index_main_senses():
-    from resources.mainsense.mainsensecompiler import MainSenseCompiler
-    msc = MainSenseCompiler(input_dir=config.CLASSIFIED_DIR,
-                            resources_dir=config.RESOURCES_DIR,)
-    msc.make_raw_index()
-    msc.refine_index()
-    msc.finalize()
+    from resources.mainsense.mainsensecompiler import (make_raw_index,
+                                                       refine_index,
+                                                       finalize)
+    make_raw_index(config.CLASSIFIED_DIR)
+    refine_index()
+    finalize()
 
 
 def index_superordinates():

@@ -32,7 +32,9 @@ def is_viable(sense):
     if (d.startswith('general attrib') or
             d.startswith('gen attrib') or
             d.startswith('appositive') or
-            d.startswith('comb., as')):
+            d.startswith('comb, ') or
+            d.startswith('comb ') or
+            d == 'comb'):
         return False
 
     if any([t in d for t in trigger_words]):
